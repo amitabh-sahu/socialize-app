@@ -1,45 +1,39 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import { getPosts } from './actions/actions';
-import NavBar from './components/NavBar';
-import BottomBar from './components/BottomBar';
+import React from 'react';
+import PrivateRoute from './components/PrivateRoute';
+import Hero from './components/Hero';
 import Posts from './components/Posts';
+import SignIn from './components/SignIn';
+import SignUp from './components/SignUp';
 import Form from './components/Form';
 import NoMatch from './components/NoMatch';
-import Box from '@mui/material/Box';
+import Redirected from './components/Redirected';
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 function App() {
-  const dispatch = useDispatch();
-  const posts = useSelector((state) => state.posts);
-
-  useEffect(() => {
-    dispatch(getPosts());
-  }, [dispatch, posts]);
-
   return (
-    <Box sx={{ height: '100vh', display: 'grid', gridTemplateRows: 'max-content auto max-content' }}>
-      <Router>
-        <NavBar />
-        <Box sx={{ position: 'relative' }}>
-          <Switch>
-            <Route exact path="/">
-              <Posts />
-            </Route>
-            <Route path="/add">
-              <Form />
-            </Route>
-            <Route path="/edit/:postId">
-              <Form />
-            </Route>
-            <Route>
-              <NoMatch />
-            </Route>
-          </Switch>
-        </Box>
-        <BottomBar />
-      </Router>
-    </Box>
+    <Router>
+      <Switch>
+        <Route exact path="/">
+          <PrivateRoute component={Posts} />
+        </Route>
+        <Route exact path="/signin">
+          <Hero component={SignIn} />
+        </Route>
+        <Route exact path="/signup">
+          <Hero component={SignUp} />
+        </Route>
+        <Route exact path="/add">
+          <PrivateRoute component={Form} />
+        </Route>
+        <Route exact path="/edit/:postId">
+          <PrivateRoute component={Form} />
+        </Route>
+        <Route exact path="/redirected">
+          <Hero component={Redirected} />
+        </Route>
+        <Route component={NoMatch} />
+      </Switch>
+    </Router>
   );
 }
 

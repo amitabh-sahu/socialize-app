@@ -6,14 +6,15 @@ import Typography from '@mui/material/Typography';
 import { useParams, useHistory } from "react-router-dom";
 import FileBase from 'react-file-base64';
 import { useSelector, useDispatch } from 'react-redux';
-import { addPost, updatePost } from '../actions/actions';
+import { addPost, updatePost } from '../actions/postActions';
 
 export default function MultilineTextFields() {
     const history = useHistory();
     const { postId } = useParams();
     const dispatch = useDispatch();
+    const user = JSON.parse(localStorage.getItem('profile'));
     const post = useSelector((state) => postId ? state.posts.find((each) => each._id === postId) : null);
-    const [postData, setPostData] = useState({ creator: '', title: '', message: '', tags: '', selectedFile: '' });
+    const [postData, setPostData] = useState({ title: '', message: '', tags: '', selectedFile: '' });
 
     useEffect(() => {
         if (post) {
@@ -23,10 +24,10 @@ export default function MultilineTextFields() {
 
     const saveNote = () => {
         if (postId) {
-            dispatch(updatePost(postId, postData));
+            dispatch(updatePost(postId, { ...postData, name: user?.result?.name }));
         }
         else {
-            dispatch(addPost(postData));
+            dispatch(addPost({ ...postData, name: user?.result?.name }));
         }
         history.push('/');
     };
@@ -41,7 +42,6 @@ export default function MultilineTextFields() {
             <Typography variant="h5" sx={{ mb: 1 }}>
                 {postId ? ('Edit post') : ('Add new post')}
             </Typography>
-            <TextField id="creator" label="Creator" multiline value={postData.creator} onChange={e => setPostData({ ...postData, creator: e.target.value })} />
             <TextField id="title" label="Title" multiline value={postData.title} onChange={e => setPostData({ ...postData, title: e.target.value })} />
             <TextField id="message" label="Message" multiline rows={5} value={postData.message} onChange={e => setPostData({ ...postData, message: e.target.value })} />
             <TextField id="tags" label="Tags" multiline value={postData.tags} onChange={e => setPostData({ ...postData, tags: e.target.value.split(',') })} />

@@ -9,7 +9,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useHistory } from "react-router-dom";
 import { useDispatch } from 'react-redux';
-import { deletePost } from '../actions/actions';
+import { deletePost } from '../actions/postActions';
 
 const StyledMenu = styled((props) => (
     <Menu

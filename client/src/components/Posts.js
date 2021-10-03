@@ -10,7 +10,7 @@ function Posts() {
 
     return (
         <Box id="contentBox" sx={{ overflowY: 'auto', position: 'absolute', top: 0, width: '100%', height: '100%', scrollBehavior: 'smooth' }}>
-            {posts.length ? (
+            {posts?.length ? (
                 <Box sx={{ display: 'grid', p: 2, gap: 2 }}>
                     {posts.map((post) => (
                     <Post key={post._id} id={post._id} post={post} />
