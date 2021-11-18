@@ -12,10 +12,12 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Link, useHistory } from "react-router-dom";
 import { signUp } from '../actions/authActions';
 import { useDispatch } from 'react-redux';
+import useLoader from '../hooks/useLoader';
 
 export default function SignUp() {
     const history = useHistory();
     const dispatch = useDispatch();
+    const [loader, showLoader, hideLoader] = useLoader();
     const [values, setValues] = React.useState({
         firstName: '',
         lastName: '',
@@ -30,18 +32,23 @@ export default function SignUp() {
     const handleClickShowPassword = (prop) => {
         setValues({ ...values, showPassword: !values.showPassword });
     };
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
-        dispatch(signUp(values, history));
+        showLoader();
+        await dispatch(signUp(values, history));
+        hideLoader();
     };
 
-    return (
-        <Container component="main" maxWidth="xs" sx={{ width: 'max-content', p: 2, backgroundColor: '#ffffff', borderRadius: 1 }}>
+    return loader ||  (
+        <Container component="main" maxWidth="xs" sx={{ maxWidth: 'max-content', p: 2 }}>
             <Box
                 sx={{
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
+                    backgroundColor: '#ffffff',
+                    borderRadius: 1,
+                    p: 2,
                 }}
             >
                 <Avatar variant="rounded" sx={{ m: 1, backgroundColor: '#ba000d' }}>
@@ -57,9 +64,10 @@ export default function SignUp() {
                                 required
                                 fullWidth
                                 id="firstName"
-                                label="First Name"
                                 name="firstName"
+                                label="First Name"
                                 autoComplete="fname"
+                                type="text"
                                 value={values.firstName}
                                 onChange={handleChange('firstName')}
                                 autoFocus
@@ -70,9 +78,10 @@ export default function SignUp() {
                                 required
                                 fullWidth
                                 id="lastName"
-                                label="Last Name"
                                 name="lastName"
+                                label="Last Name"
                                 autoComplete="lname"
+                                type="text"
                                 value={values.lastName}
                                 onChange={handleChange('lastName')}
                             />
@@ -82,9 +91,10 @@ export default function SignUp() {
                                 required
                                 fullWidth
                                 id="email"
-                                label="Email Address"
                                 name="email"
+                                label="Email Address"
                                 autoComplete="email"
+                                type="email"
                                 value={values.email}
                                 onChange={handleChange('email')}
                             />
@@ -95,6 +105,7 @@ export default function SignUp() {
                                 fullWidth
                                 id="password"
                                 name="password"
+                                label="Password"
                                 autoComplete="current-password"
                                 type={values.showPassword ? 'text' : 'password'}
                                 value={values.password}
@@ -106,6 +117,7 @@ export default function SignUp() {
                                 required
                                 fullWidth
                                 id="confirmPassword"
+                                label="Confirm Password"
                                 name="confirmPassword"
                                 type={values.showPassword ? 'text' : 'password'}
                                 value={values.confirmPassword}
@@ -116,8 +128,8 @@ export default function SignUp() {
                             <Button
                                 onClick={handleClickShowPassword}
                                 aria-label="toggle password visibility"
-                                endIcon={values.showPassword ? <VisibilityOff /> : <Visibility />}>
-                                Show
+                                startIcon={values.showPassword ? <VisibilityOff /> : <Visibility />}>
+                                {values.showPassword ? 'Hide' : 'Show'}
                             </Button>
                         </Grid>
                     </Grid>

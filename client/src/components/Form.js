@@ -7,11 +7,13 @@ import { useParams, useHistory } from "react-router-dom";
 import FileBase from 'react-file-base64';
 import { useSelector, useDispatch } from 'react-redux';
 import { addPost, updatePost } from '../actions/postActions';
+import useLoader from '../hooks/useLoader';
 
 export default function MultilineTextFields() {
     const history = useHistory();
     const { postId } = useParams();
     const dispatch = useDispatch();
+    const [loader, showLoader, hideLoader] = useLoader();
     const user = JSON.parse(localStorage.getItem('profile'));
     const post = useSelector((state) => postId ? state.posts.find((each) => each._id === postId) : null);
     const [postData, setPostData] = useState({ title: '', message: '', tags: '', selectedFile: '' });
@@ -20,15 +22,20 @@ export default function MultilineTextFields() {
         if (post) {
             setPostData(post);
         }
+        else {
+            setPostData({ title: '', message: '', tags: '', selectedFile: '' });
+        }
     }, [post]);
 
     const saveNote = () => {
+        showLoader();
         if (postId) {
             dispatch(updatePost(postId, { ...postData, name: user?.result?.name }));
         }
         else {
             dispatch(addPost({ ...postData, name: user?.result?.name }));
         }
+        hideLoader();
         history.push('/');
     };
 
@@ -52,6 +59,7 @@ export default function MultilineTextFields() {
                 <FileBase type="file" multiple={false} onDone={({ base64 }) => setPostData({ ...postData, selectedFile: base64 })} />
             </Box>
             <Button variant="contained" onClick={saveNote} sx={{ mr: 1, my: 1 }}>Save</Button>
+            {loader}
         </Box>
     );
 }

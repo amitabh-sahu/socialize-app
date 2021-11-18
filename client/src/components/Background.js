@@ -1,7 +1,7 @@
 import React from 'react';
 import imgHero from '../assets/imgHero.jpg';
 
-function Landing() {
+function Background() {
     const style = {
         position: 'absolute',
         inset: 0,
@@ -19,4 +19,4 @@ function Landing() {
     );
 }
 
-export default Landing;
+export default Background;

@@ -1,1 +1,1 @@
-This is a basic social media app with CRUD opreation and user management build using MERN stack.
+This is a basic social media app with CRUD operation and user management build using MERN stack.

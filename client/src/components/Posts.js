@@ -25,8 +25,7 @@ function Posts() {
                         </Link>.
                     </Typography>
                 </Box>
-            )
-            }
+            )}
         </Box>
     );
 }

@@ -7,6 +7,8 @@ import enviroment from "../enviroment.js";
 const router = express.Router();
 const SECRET_KEY = enviroment.secret_key;
 
+const capitalize = (str) => str && str[0].toUpperCase() + str.slice(1).toLowerCase();
+
 router.post('/singin', async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -39,7 +41,7 @@ router.post('/singup', async (req, res) => {
         else {
             if (password === confirmPassword) {
                 const hashedPassword = await bcrypt.hash(password, 12);
-                const newUser = await User.create({ name: `${firstName} ${lastName}`, email, password: hashedPassword });
+                const newUser = await User.create({ name: `${capitalize(firstName)} ${capitalize(lastName)}`, email, password: hashedPassword });
                 const token = jwt.sign({ email: newUser.email, id: newUser._id }, SECRET_KEY, { expiresIn: '1h' });
                 res.status(200).json({ result: newUser, token });
             }

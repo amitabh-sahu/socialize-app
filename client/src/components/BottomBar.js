@@ -10,8 +10,10 @@ import { useHistory, useLocation } from "react-router-dom";
 import { useDispatch } from 'react-redux';
 import decode from 'jwt-decode';
 import { LOGOUT } from '../constants/actionType';
+import useLoader from '../hooks/useLoader';
 
 export default function SimpleBottomNavigation() {
+    const [loader, showLoader, hideLoader] = useLoader();
     const [user, setUser] = useState(JSON.parse(localStorage.getItem('profile')));
     const dispatch = useDispatch();
     const location = useLocation();
@@ -26,9 +28,11 @@ export default function SimpleBottomNavigation() {
         document.getElementById('contentBox').scrollTop = 0;
     };
     const logOut = () => {
+        showLoader();
         dispatch({ type: LOGOUT });
         history.push('/redirected');
         setUser(null);
+        hideLoader();
     };
     useEffect(() => {
         const token = user?.token;
@@ -47,8 +51,9 @@ export default function SimpleBottomNavigation() {
                 <BottomNavigationAction label="Home" icon={<HomeIcon />} onClick={gotoHome} />
                 <BottomNavigationAction label="Log Out" icon={<LogoutIcon />} onClick={logOut} />
                 <BottomNavigationAction label="Add Post" icon={<AddIcon />} onClick={addPost} />
-                <BottomNavigationAction label="Back to top" icon={<ArrowUpwardIcon />} onClick={gotoTop} />
+                {location.pathname === "/" && <BottomNavigationAction label="Back to top" icon={<ArrowUpwardIcon />} onClick={gotoTop} />}
             </BottomNavigation>
+            {loader}
         </Box>
     );
 }

@@ -5,6 +5,7 @@ import { getPosts } from '../actions/postActions';
 import Box from '@mui/material/Box';
 import NavBar from './NavBar';
 import BottomBar from './BottomBar';
+import useLoader from '../hooks/useLoader';
 
 const HomeLayout = ({ children }) => (
     <Box sx={{ height: '100vh', display: 'grid', gridTemplateRows: 'max-content auto max-content' }}>
@@ -18,15 +19,21 @@ const HomeLayout = ({ children }) => (
 
 function Home({ component: Component, ...rest }) {
     const dispatch = useDispatch();
+    const [loader, showLoader, hideLoader] = useLoader();
+    const getAllPosts = async () => {
+        showLoader();
+        await dispatch(getPosts());
+        hideLoader();
+    }
 
     useEffect(() => {
-        dispatch(getPosts());
+        getAllPosts();
     }, [dispatch]);
 
     return (
         <Route {...rest} render={matchProps => (
             <HomeLayout>
-                <Component {...matchProps} />
+                {loader || <Component {...matchProps} />}
             </HomeLayout>
         )} />
     );

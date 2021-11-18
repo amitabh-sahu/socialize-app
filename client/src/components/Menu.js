@@ -10,6 +10,8 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useHistory } from "react-router-dom";
 import { useDispatch } from 'react-redux';
 import { deletePost } from '../actions/postActions';
+import Modal from './Modal';
+import useLoader from '../hooks/useLoader';
 
 const StyledMenu = styled((props) => (
     <Menu
@@ -56,6 +58,8 @@ export default function Menus({ postId }) {
     const history = useHistory();
     const dispatch = useDispatch();
     const [anchorEl, setAnchorEl] = React.useState(null);
+    const [openModal, setOpenModal] = React.useState(false);
+    const [loader, showLoader, hideLoader] = useLoader();
     const open = Boolean(anchorEl);
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -69,10 +73,12 @@ export default function Menus({ postId }) {
     };
     const handleDelete = () => {
         setAnchorEl(null);
-        const confirmation = window.confirm('Are you sure you want to delete this post?');
-        if (confirmation) {
-            dispatch(deletePost(postId));
-        }
+        setOpenModal(true);
+    };
+    const handleConfirmation = () => {
+        showLoader();
+        dispatch(deletePost(postId));
+        hideLoader();
     };
 
     return (
@@ -108,6 +114,8 @@ export default function Menus({ postId }) {
                     Delete
                 </MenuItem>
             </StyledMenu>
+            <Modal visible={openModal} handleClose={() => setOpenModal(false)} handleOK={handleConfirmation} type="confirm" msg="Are you sure you want to delete this post?" />
+            {loader}
         </div>
     );
 }

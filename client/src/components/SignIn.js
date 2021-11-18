@@ -17,10 +17,12 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Link, useHistory } from "react-router-dom";
 import { signIn } from '../actions/authActions';
 import { useDispatch } from 'react-redux';
+import useLoader from '../hooks/useLoader';
 
 export default function SignIn() {
     const history = useHistory();
     const dispatch = useDispatch();
+    const [loader, showLoader, hideLoader] = useLoader();
     const [values, setValues] = React.useState({
         email: '',
         password: '',
@@ -35,18 +37,23 @@ export default function SignIn() {
             showPassword: !values.showPassword,
         });
     };
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
-        dispatch(signIn(values, history));
+        showLoader();
+        await dispatch(signIn(values, history));
+        hideLoader();
     };
 
-    return (
-        <Container component="main" maxWidth="xs" sx={{ width: 'max-content', p: 2, backgroundColor: '#ffffff', borderRadius: 1 }}>
+    return loader || (
+        <Container component="main" maxWidth="xs" sx={{ maxWidth: 'max-content', p: 2 }}>
             <Box
                 sx={{
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
+                    backgroundColor: '#ffffff',
+                    borderRadius: 1,
+                    p: 2,
                 }}
             >
                 <Avatar variant="rounded" sx={{ m: 1, backgroundColor: '#ba000d' }}>
@@ -64,17 +71,19 @@ export default function SignIn() {
                         label="Email Address"
                         name="email"
                         autoComplete="email"
+                        type="email"
                         value={values.email}
                         onChange={handleChange('email')}
                         autoFocus
                     />
                     <FormControl sx={{ my: 1, width: '100%' }} variant="outlined">
-                        <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
+                        <InputLabel htmlFor="outlined-adornment-password">Password *</InputLabel>
                         <OutlinedInput
                             required
                             fullWidth
                             id="password"
                             name="password"
+                            label="Password *"
                             autoComplete="current-password"
                             type={values.showPassword ? 'text' : 'password'}
                             value={values.password}
@@ -90,14 +99,13 @@ export default function SignIn() {
                                     </IconButton>
                                 </InputAdornment>
                             }
-                            label="Password"
                         />
                     </FormControl>
                     <Button
                         type="submit"
                         fullWidth
                         variant="contained"
-                        sx={{ my: 3 }}
+                        sx={{ my: 2 }}
                     >
                         Sign In
                     </Button>
