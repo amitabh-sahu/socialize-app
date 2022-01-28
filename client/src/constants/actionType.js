@@ -6,3 +6,5 @@ export const LIKE_DISLIKE = 'LIKE_DISLIKE';
 
 export const AUTH = 'AUTH';
 export const LOGOUT = 'LOGOUT';
+
+export const GET_ME = 'GET_ME';

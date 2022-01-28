@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Post from './Post';
 
 function Posts() {
-    const posts = useSelector((state) => state.posts);
+    const posts = useSelector((state) => state.posts).sort((a, b) => {return a.createdAt < b.createdAt});
 
     return (
         <Box id="contentBox" sx={{ overflowY: 'auto', position: 'absolute', top: 0, width: '100%', height: '100%', scrollBehavior: 'smooth' }}>

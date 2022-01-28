@@ -5,7 +5,7 @@ import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material//Typography';
 import { Link, useHistory } from "react-router-dom";
 import logo from '../assets/logo.png';
-import { signIn } from '../actions/authActions';
+import { guestLogIn } from '../actions/authActions';
 import { useDispatch } from 'react-redux';
 import useLoader from '../hooks/useLoader';
 
@@ -13,15 +13,10 @@ function Landing() {
     const history = useHistory();
     const dispatch = useDispatch();
     const [loader, showLoader, hideLoader] = useLoader();
-    const guest = {
-        email: 'guest@socialize.com',
-        password: 'guestlogin',
-    };
-    const handleGuestLogin = async () => {
+    const handleGuestLogin = () => {
         showLoader();
-        await dispatch(signIn(guest, history));
-        hideLoader();
-        history.push('/redirected');
+        dispatch(guestLogIn(history))
+            .finally(() => hideLoader());
     };
 
     return (
@@ -43,7 +38,8 @@ function Landing() {
                 align="center"
                 sx={{ my: 2 }}
             >
-                Post whats on your mind with the world.
+                Hellow World! <br />
+                Share what's on your mind with the world.
             </Typography>
             <Link to='/signin' style={{ textDecoration: 'none' }}>
                 <Button variant="contained" size="large" sx={{ fontSize: '1rem', minWidth: 200 }} >

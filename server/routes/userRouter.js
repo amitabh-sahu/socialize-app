@@ -1,56 +1,19 @@
 import express from 'express';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
 import User from '../models/userSchema.js';
-import enviroment from "../enviroment.js";
+import auth from '../middleware/auth.js';
 
 const router = express.Router();
-const SECRET_KEY = enviroment.secret_key;
 
-const capitalize = (str) => str && str[0].toUpperCase() + str.slice(1).toLowerCase();
-
-router.post('/singin', async (req, res) => {
-    const { email, password } = req.body;
+router.get('/getMe', auth, async (req, res) => {
     try {
-        const userExist = await User.findOne({ email });
-        if (userExist) {
-            const isPassMatch = await bcrypt.compare(password, userExist.password);
-            if (isPassMatch) {
-                const token = jwt.sign({ email: userExist.email, id: userExist._id }, SECRET_KEY, { expiresIn: '1h' });
-                res.status(200).json({ result: userExist, token });
-            }
-            else {
-                res.status(404).json({ msg: 'Invalid Credentials' });
-            }
-        }
-        else {
-            res.status(404).json({ msg: 'Invalid Credentials' });
-        }
+        const user = await User.findOne({ _id: req.userId });
+        res.status(200).json({
+            id: user._id,
+            name: user.name,
+            email: user.email
+        });
     } catch (err) {
-        res.status(500).json({ msg: err.message });
-    }
-});
-
-router.post('/singup', async (req, res) => {
-    const { firstName, lastName, email, password, confirmPassword } = req.body;
-    try {
-        const userExist = await User.findOne({ email });
-        if (userExist) {
-            res.status(400).json({ msg: 'This email is already exist' });
-        }
-        else {
-            if (password === confirmPassword) {
-                const hashedPassword = await bcrypt.hash(password, 12);
-                const newUser = await User.create({ name: `${capitalize(firstName)} ${capitalize(lastName)}`, email, password: hashedPassword });
-                const token = jwt.sign({ email: newUser.email, id: newUser._id }, SECRET_KEY, { expiresIn: '1h' });
-                res.status(200).json({ result: newUser, token });
-            }
-            else {
-                res.status(400).json({ msg: "Password didn't match" });
-            }
-        }
-    } catch (err) {
-        res.status(500).json({ msg: err.message });
+        res.status(404).json({ msg: err.message });
     }
 });
 

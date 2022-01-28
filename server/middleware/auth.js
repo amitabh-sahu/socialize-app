@@ -1,21 +1,21 @@
 import jwt from "jsonwebtoken";
 import enviroment from "../enviroment.js";
 
-const SECRET_KEY = enviroment.secret_key;
+const ACCESS_SECRET_KEY = enviroment.access_secret_key;
 
 const auth = async (req, res, next) => {
-    try {
-        const token = req.headers.authorization.split(" ")[1];
-
-        if (token) {
-            const decodedData = jwt.verify(token, SECRET_KEY);
-            req.userId = decodedData?.id;
-        }
-
-        next();
-    } catch (error) {
-        console.log(error);
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (token == null) {
+        return res.sendStatus(401);
     }
-};
+    jwt.verify(token, ACCESS_SECRET_KEY, (err, user) => {
+        if (err) {
+            return res.sendStatus(403);
+        }
+        req.userId = user.id;
+        next();
+    });
+}
 
 export default auth;

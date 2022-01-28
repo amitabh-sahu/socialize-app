@@ -2,13 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import reportWebVitals from './reportWebVitals';
-import { createStore, applyMiddleware, compose } from 'redux';
-import { reducers } from './reducers/reducers';
-import thunk from 'redux-thunk';
-import './index.css';
+import { store } from './misc/store';
 import App from './App';
-
-const store = createStore(reducers, compose(applyMiddleware(thunk)));
+import './index.css';
 
 ReactDOM.render(
   <Provider store={store}>

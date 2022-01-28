@@ -3,7 +3,6 @@ import Box from '@mui/material/Box';
 import CardMedia from '@mui/material/CardMedia';
 import loader from '../assets/loader.svg';
 
-
 function Loader() {
     return (
         <Box sx={{

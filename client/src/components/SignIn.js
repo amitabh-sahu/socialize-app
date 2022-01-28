@@ -7,9 +7,6 @@ import Container from '@mui/material/Container';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import InputLabel from '@mui/material/InputLabel';
-import FormControl from '@mui/material/FormControl';
-import OutlinedInput from '@mui/material/OutlinedInput';
 import Visibility from '@mui/icons-material/Visibility';
 import InputAdornment from '@mui/material/InputAdornment';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
@@ -23,25 +20,51 @@ export default function SignIn() {
     const history = useHistory();
     const dispatch = useDispatch();
     const [loader, showLoader, hideLoader] = useLoader();
+    const [showPassword, setShowPassword] = React.useState(false);
     const [values, setValues] = React.useState({
         email: '',
         password: '',
-        showPassword: false,
+    });
+    const [helperText, setHelperText] = React.useState({
+        email: '',
+        password: '',
     });
     const handleChange = (prop) => (event) => {
         setValues({ ...values, [prop]: event.target.value });
     };
-    const handleClickShowPassword = () => {
-        setValues({
-            ...values,
-            showPassword: !values.showPassword,
-        });
-    };
-    const handleSubmit = async (event) => {
+    const handleSubmit = (event) => {
         event.preventDefault();
         showLoader();
-        await dispatch(signIn(values, history));
-        hideLoader();
+        if (validate()) {
+            dispatch(signIn(values, history))
+                .finally(() => hideLoader());
+            setValues({ email: '', password: '' });
+            setHelperText({ email: '', password: '' });
+            setShowPassword(false);
+        }
+    };
+    const validate = () => {
+        let temp = { ...helperText };
+        for (const key in values) {
+            temp[key] = values[key] === '' ? 'This field is required.' : '';
+            isValid(key);
+        }
+        setHelperText({ ...temp });
+        return Object.values(temp).every((x) => x === '');
+    };
+    const isValid = (target) => {
+        if (values[target] !== '') {
+            const emailReg = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            if (target === 'email' && !emailReg.test(values.email)) {
+                setHelperText({ ...helperText, [target]: 'Email is not valid.' });
+                return;
+            }
+            if (target === 'password' && values.password.length < 8) {
+                setHelperText({ ...helperText, [target]: 'Password is too short.' });
+                return;
+            }
+            setHelperText({ ...helperText, [target]: '' });
+        }
     };
 
     return loader || (
@@ -68,39 +91,45 @@ export default function SignIn() {
                         required
                         fullWidth
                         id="email"
-                        label="Email Address"
                         name="email"
-                        autoComplete="email"
                         type="email"
+                        label="Email Address"
+                        autoComplete="email"
                         value={values.email}
                         onChange={handleChange('email')}
+                        onBlur={() => { isValid('email') }}
+                        helperText={helperText.email}
+                        error={helperText.email.length === 0 ? false : true}
                         autoFocus
                     />
-                    <FormControl sx={{ my: 1, width: '100%' }} variant="outlined">
-                        <InputLabel htmlFor="outlined-adornment-password">Password *</InputLabel>
-                        <OutlinedInput
-                            required
-                            fullWidth
-                            id="password"
-                            name="password"
-                            label="Password *"
-                            autoComplete="current-password"
-                            type={values.showPassword ? 'text' : 'password'}
-                            value={values.password}
-                            onChange={handleChange('password')}
-                            endAdornment={
-                                <InputAdornment position="end">
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="password"
+                        name="password"
+                        label="Password"
+                        autoComplete="current-password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={values.password}
+                        helperText={helperText.password}
+                        onChange={handleChange('password')}
+                        onBlur={() => { isValid('password') }}
+                        error={helperText.password.length === 0 ? false : true}
+                        InputProps={{
+                            endAdornment: (
+                                < InputAdornment position="end" >
                                     <IconButton
                                         aria-label="toggle password visibility"
-                                        onClick={handleClickShowPassword}
+                                        onClick={() => setShowPassword(!showPassword)}
                                         edge="end"
                                     >
-                                        {values.showPassword ? <VisibilityOff /> : <Visibility />}
+                                        {showPassword ? <VisibilityOff /> : <Visibility />}
                                     </IconButton>
                                 </InputAdornment>
-                            }
-                        />
-                    </FormControl>
+                            )
+                        }}
+                    />
                     <Button
                         type="submit"
                         fullWidth
@@ -126,6 +155,6 @@ export default function SignIn() {
                     </Grid>
                 </Box>
             </Box>
-        </Container>
+        </Container >
     );
 }

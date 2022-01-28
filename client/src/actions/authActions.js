@@ -1,19 +1,9 @@
-import axios from 'axios';
-import { AUTH } from '../constants/actionType';
-
-// const API = axios.create({ baseURL: 'http://localhost:5000' });
-const API = axios.create({ baseURL: process.env.REACT_APP_SERVER_URL });
-
-API.interceptors.request.use((req) => {
-    if (localStorage.getItem('profile')) {
-        req.headers.Authorization = `Bearer ${JSON.parse(localStorage.getItem('profile')).token}`;
-    }
-    return req;
-});
+import API from '../misc/Interceptors';
+import { AUTH, LOGOUT } from '../constants/actionType';
 
 export const signIn = (userData, history) => async (dispatch) => {
     try {
-        const { data } = await API.post(`/users/singin`, userData);
+        const { data } = await API.post(`/auth/singin`, userData);
         dispatch({ type: AUTH, data });
         history.push('/');
     } catch (error) {
@@ -23,8 +13,37 @@ export const signIn = (userData, history) => async (dispatch) => {
 
 export const signUp = (userData, history) => async (dispatch) => {
     try {
-        const { data } = await API.post(`/users/singup`, userData);
+        const { data } = await API.post(`/auth/singup`, userData);
         dispatch({ type: AUTH, data });
+        history.push('/');
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const guestLogIn = (history) => async (dispatch) => {
+    try {
+        const { data } = await API.get(`/auth/guest`);
+        dispatch({ type: AUTH, data });
+        history.push('/');
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const isValid = () => async (dispatch) => {
+    try {
+        const { data } = await API.get(`/auth/isValid`);
+        dispatch({ type: AUTH, data });
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const logout = (history) => async (dispatch) => {
+    try {
+        await API.delete(`/auth/logout`);
+        dispatch({ type: LOGOUT });
         history.push('/');
     } catch (error) {
         console.log(error);

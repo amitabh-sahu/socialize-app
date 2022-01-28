@@ -10,7 +10,7 @@ import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import Menu from './Menu';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { postSentiment } from '../actions/postActions';
 
 const theme = createTheme({
@@ -28,13 +28,14 @@ const theme = createTheme({
 
 export default function Post({ post }) {
     const dispatch = useDispatch();
-    const user = JSON.parse(localStorage.getItem('profile'));
+    const user = useSelector((state) => state.user);
+
     return (
         <Card sx={{ display: 'grid', py: 1, gap: 1, backgroundColor: '#dddddd' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', px: 2 }}>
                 <Avatar alt={post.name} src={`https://avatars.dicebear.com/api/human/${post.creator}.svg`} sx={{ fontSize: '2rem' }}>
                     {post.name.charAt(0).toUpperCase()}
-                    </Avatar>
+                </Avatar>
                 <Box sx={{ ml: 1, flex: 1 }}>
                     <Typography variant="h5" component="h1">
                         {post.name}
@@ -43,8 +44,8 @@ export default function Post({ post }) {
                         {moment(post.createdAt).fromNow()}
                     </Typography>
                 </Box>
-                {(user?.result._id === post.creator) && (<Menu postId={post._id} />)}
-                
+                {(user.id === post.creator) && (<Menu postId={post._id} />)}
+
             </Box>
             {post.selectedFile ? (
                 <ThemeProvider theme={theme}>

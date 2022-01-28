@@ -18,28 +18,68 @@ export default function SignUp() {
     const history = useHistory();
     const dispatch = useDispatch();
     const [loader, showLoader, hideLoader] = useLoader();
+    const [showPassword, setShowPassword] = React.useState(false);
     const [values, setValues] = React.useState({
         firstName: '',
         lastName: '',
         email: '',
         password: '',
         confirmPassword: '',
-        showPassword: false,
+    });
+    const [helperText, setHelperText] = React.useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
     });
     const handleChange = (prop) => (event) => {
         setValues({ ...values, [prop]: event.target.value });
     };
-    const handleClickShowPassword = (prop) => {
-        setValues({ ...values, showPassword: !values.showPassword });
-    };
-    const handleSubmit = async (event) => {
+    const handleSubmit = (event) => {
         event.preventDefault();
         showLoader();
-        await dispatch(signUp(values, history));
-        hideLoader();
+        if (validate()) {
+            dispatch(signUp(values, history))
+                .finally(() => hideLoader());
+            setValues({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '' });
+            setHelperText({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '' });
+            setShowPassword(false);
+        }
+    };
+    const validate = () => {
+        let temp = { ...helperText };
+        for (const key in values) {
+            temp[key] = values[key] === '' ? 'This field is required.' : '';
+            isValid(key);
+        }
+        if ((values.password.length >= 8 || values.confirmPassword.length >= 8) && values.password !== values.confirmPassword) {
+            temp.password = "Password didn't match.";
+            temp.confirmPassword = "Password didn't match.";
+        }
+        setHelperText({ ...temp });
+        return Object.values(temp).every((x) => x === '');
+    };
+    const isValid = (target) => {
+        if (values[target] !== '') {
+            const emailReg = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            if (target === 'email' && !emailReg.test(values.email)) {
+                setHelperText({ ...helperText, [target]: 'Email is not valid.' });
+                return;
+            }
+            if ((target === 'firstName' || target === 'lastName') && !/^[a-zA-Z]{2,30}$/.test(values[target])) {
+                setHelperText({ ...helperText, [target]: 'Name is not valid.' });
+                return;
+            }
+            if ((target === 'password' || target === 'confirmPassword') && values[target].length < 8) {
+                setHelperText({ ...helperText, [target]: 'Password is too short.' });
+                return;
+            }
+            setHelperText({ ...helperText, [target]: '' });
+        }
     };
 
-    return loader ||  (
+    return loader || (
         <Container component="main" maxWidth="xs" sx={{ maxWidth: 'max-content', p: 2 }}>
             <Box
                 sx={{
@@ -70,6 +110,9 @@ export default function SignUp() {
                                 type="text"
                                 value={values.firstName}
                                 onChange={handleChange('firstName')}
+                                onBlur={() => { isValid('firstName') }}
+                                helperText={helperText.firstName}
+                                error={helperText.firstName.length === 0 ? false : true}
                                 autoFocus
                             />
                         </Grid>
@@ -84,6 +127,9 @@ export default function SignUp() {
                                 type="text"
                                 value={values.lastName}
                                 onChange={handleChange('lastName')}
+                                onBlur={() => { isValid('lastName') }}
+                                helperText={helperText.lastName}
+                                error={helperText.lastName.length === 0 ? false : true}
                             />
                         </Grid>
                         <Grid item xs={12}>
@@ -97,6 +143,9 @@ export default function SignUp() {
                                 type="email"
                                 value={values.email}
                                 onChange={handleChange('email')}
+                                onBlur={() => { isValid('email') }}
+                                helperText={helperText.email}
+                                error={helperText.email.length === 0 ? false : true}
                             />
                         </Grid>
                         <Grid item xs={12}>
@@ -107,9 +156,12 @@ export default function SignUp() {
                                 name="password"
                                 label="Password"
                                 autoComplete="current-password"
-                                type={values.showPassword ? 'text' : 'password'}
+                                type={showPassword ? 'text' : 'password'}
                                 value={values.password}
+                                helperText={helperText.password}
                                 onChange={handleChange('password')}
+                                onBlur={() => { isValid('password') }}
+                                error={helperText.password.length === 0 ? false : true}
                             />
                         </Grid>
                         <Grid item xs={12}>
@@ -119,17 +171,20 @@ export default function SignUp() {
                                 id="confirmPassword"
                                 label="Confirm Password"
                                 name="confirmPassword"
-                                type={values.showPassword ? 'text' : 'password'}
+                                type={showPassword ? 'text' : 'password'}
                                 value={values.confirmPassword}
+                                helperText={helperText.confirmPassword}
                                 onChange={handleChange('confirmPassword')}
+                                onBlur={() => { isValid('confirmPassword') }}
+                                error={helperText.confirmPassword.length === 0 ? false : true}
                             />
                         </Grid>
                         <Grid item xs={12}>
                             <Button
-                                onClick={handleClickShowPassword}
+                                onClick={() => setShowPassword(!showPassword)}
                                 aria-label="toggle password visibility"
-                                startIcon={values.showPassword ? <VisibilityOff /> : <Visibility />}>
-                                {values.showPassword ? 'Hide' : 'Show'}
+                                startIcon={showPassword ? <VisibilityOff /> : <Visibility />}>
+                                {showPassword ? 'Hide' : 'Show'}
                             </Button>
                         </Grid>
                     </Grid>

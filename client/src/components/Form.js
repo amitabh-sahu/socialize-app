@@ -14,7 +14,7 @@ export default function MultilineTextFields() {
     const { postId } = useParams();
     const dispatch = useDispatch();
     const [loader, showLoader, hideLoader] = useLoader();
-    const user = JSON.parse(localStorage.getItem('profile'));
+    const user = useSelector((state) => state.auth);
     const post = useSelector((state) => postId ? state.posts.find((each) => each._id === postId) : null);
     const [postData, setPostData] = useState({ title: '', message: '', tags: '', selectedFile: '' });
 
@@ -30,10 +30,10 @@ export default function MultilineTextFields() {
     const saveNote = () => {
         showLoader();
         if (postId) {
-            dispatch(updatePost(postId, { ...postData, name: user?.result?.name }));
+            dispatch(updatePost(postId, { ...postData, name: user.name }));
         }
         else {
-            dispatch(addPost({ ...postData, name: user?.result?.name }));
+            dispatch(addPost({ ...postData, name: user.name }));
         }
         hideLoader();
         history.push('/');
