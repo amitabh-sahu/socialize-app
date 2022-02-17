@@ -14,7 +14,7 @@ export default function MultilineTextFields() {
     const { postId } = useParams();
     const dispatch = useDispatch();
     const [loader, showLoader, hideLoader] = useLoader();
-    const user = useSelector((state) => state.auth);
+    const user = useSelector((state) => state.user);
     const post = useSelector((state) => postId ? state.posts.find((each) => each._id === postId) : null);
     const [postData, setPostData] = useState({ title: '', message: '', tags: '', selectedFile: '' });
 
