@@ -2,7 +2,6 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import User from '../models/userSchema.js';
-import RefreshTokens from '../models/tokenSchema.js';
 import enviroment from "../enviroment.js";
 import auth from '../middleware/auth.js';
 
@@ -20,6 +19,7 @@ const cookieOption = {
     path: '/',
     expires: new Date(Date.now() + (24 * 3600 * 1000)),
 };
+let RefreshTokens = [];
 
 router.post('/singin', async (req, res) => {
     const { email, password } = req.body;
@@ -30,7 +30,7 @@ router.post('/singin', async (req, res) => {
             if (isPassMatch) {
                 const accessToken = getAccessToken({ id: userExist._id });
                 const refreshToken = getRefreshToken({ id: userExist._id });
-                await RefreshTokens.create({ refreshToken });
+                RefreshTokens.push(refreshToken);
                 res.status(200)
                     .cookie('refreshToken', refreshToken, cookieOption)
                     .json({ accessToken });
@@ -60,7 +60,7 @@ router.post('/singup', async (req, res) => {
                 const newUser = await User.create({ name: `${capitalize(firstName)} ${capitalize(lastName)}`, email, password: hashedPassword });
                 const accessToken = getAccessToken({ id: newUser._id });
                 const refreshToken = getRefreshToken({ id: newUser._id });
-                await RefreshTokens.create({ refreshToken });
+                RefreshTokens.push(refreshToken);
                 res.status(200)
                     .cookie('refreshToken', refreshToken, cookieOption)
                     .json({ accessToken });
@@ -79,7 +79,7 @@ router.get('/guest', async (req, res) => {
         const guestUser = await User.findOne({ _id: '61960fd7bbbead5163283fae' });
         const accessToken = getAccessToken({ id: guestUser._id });
         const refreshToken = getRefreshToken({ id: guestUser._id });
-        await RefreshTokens.create({ refreshToken });
+        RefreshTokens.push(refreshToken);
         res.status(200)
             .cookie('refreshToken', refreshToken, cookieOption)
             .json({ accessToken });
@@ -104,18 +104,18 @@ router.get('/refresh', async (req, res) => {
         if (refreshToken == null) {
             return res.sendStatus(401);
         }
-        if (!(await RefreshTokens.findOne({ refreshToken }))) {
+        if (!RefreshTokens.includes(refreshToken)) {
             return res.sendStatus(401);
         }
         jwt.verify(refreshToken, REFRESH_SECRET_KEY, async (err, user) => {
             if (err) {
-                await RefreshTokens.deleteMany();
+                RefreshTokens.splice(0, RefreshTokens.length);
                 return res.sendStatus(403);
             }
             if (((user.exp * 1000) - new Date().getTime()) < (3600 * 1000)) {
                 const newRefreshToken = getRefreshToken({ id: user.id });
-                await RefreshTokens.findOneAndDelete({ refreshToken });
-                await RefreshTokens.create({ refreshToken: newRefreshToken });
+                RefreshTokens.splice(RefreshTokens.indexOf(refreshToken), 1);
+                RefreshTokens.push(newRefreshToken);
                 res.cookie('refreshToken', newRefreshToken, cookieOption)
             }
             const accessToken = getAccessToken({ id: user.id });
@@ -128,8 +128,7 @@ router.get('/refresh', async (req, res) => {
 
 router.delete('/logout', auth, async (req, res) => {
     try {
-        const refreshToken = req.cookies.refreshToken;
-        await RefreshTokens.findOneAndDelete({ refreshToken });
+        RefreshTokens.splice(0, RefreshTokens.length);
         res.status(204).clearCookie('refreshToken', cookieOption).json({ msg: 'Cookie Cleared' });
     } catch (err) {
         res.status(500).json({ msg: err.message });
@@ -137,11 +136,11 @@ router.delete('/logout', auth, async (req, res) => {
 });
 
 function getAccessToken(data) {
-    return jwt.sign(data, ACCESS_SECRET_KEY, { expiresIn: '10s' });
+    return jwt.sign(data, ACCESS_SECRET_KEY, { expiresIn: '15m' });
 }
 
 function getRefreshToken(data) {
-    return jwt.sign(data, REFRESH_SECRET_KEY, { expiresIn: '15s' });
+    return jwt.sign(data, REFRESH_SECRET_KEY, { expiresIn: '24h' });
 }
 
 export default router;
